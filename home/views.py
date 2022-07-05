@@ -1,21 +1,29 @@
+from multiprocessing import context
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render, redirect
 from .models import *
 import random
 
 def home(request):
-    return HttpResponse("Hello from kamal")
+    context = {'categories' : Category.objects.all()}
 
-# {
-#     'status' : True
-#     'data' : [
-#         {}
-#     ]
-# }
+    if request.GET.get('category'):
+        return redirect(f"/quiz/?category={request.GET.get('category')}")
+
+    return render(request, 'home.html', context)
+
+def quiz(request):
+    return render(request, 'quiz.html')
 
 def get_quiz(requesst):
     try:
-        question_objs = list(Question.objects.all())
+        question_objs = Question.objects.all()
+
+        if request.GET.get('category'):
+            question_objs = question_objs.filter(category__category_name__icontains=request.GET.get('category'))
+
+            question_objs = list(question_objs)
+
         data = []
         random.shuffle((question_objs))
 
